@@ -64,7 +64,7 @@ account_id = "your_account_id"
 workers_dev = true
 ```
 5. 部署 KV 存储：
-   按照[KV绑定](./Cloudflare Workers KV 数据库配置.md)里的方法部署KV数据库，否则无法存储数据
+   按照[KV绑定](./Cloudflare%20Workers%20KV%20数据库配置.md)里的方法部署KV数据库，否则无法存储数据
 
 6. 部署到 Cloudflare Workers：
 
