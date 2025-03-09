@@ -5,6 +5,9 @@ const HTML = `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberLink - 量子短链服务</title>
+    <!-- 添加 PWA 支持 -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4d7cff">
     <style>
         :root {
             --neon-blue: #4d7cff;
@@ -224,9 +227,22 @@ const HTML = `
         .copy-button:hover {
             background: var(--neon-purple);
         }
+
+        #loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
+    <div id="loading-indicator">处理中...</div>
     <div class="cyber-container">
         <h1>⚡ CyberLink 量子短链</h1>
         
@@ -285,6 +301,7 @@ const HTML = `
             const generateBtn = document.getElementById('generateBtn');
             const urlError = document.getElementById('urlError');
             const pathError = document.getElementById('pathError');
+            const loadingIndicator = document.getElementById('loading-indicator');
 
             function validateInput(input, errorElement, message) {
                 if (!input.value) {
@@ -309,11 +326,20 @@ const HTML = `
                 return /^[A-Za-z0-9_-]{3,20}$/.test(path);
             }
 
+            function showLoading() {
+                loadingIndicator.style.display = 'block';
+                generateBtn.disabled = true;
+            }
+
+            function hideLoading() {
+                loadingIndicator.style.display = 'none';
+                generateBtn.disabled = false;
+            }
+
             generateBtn.addEventListener('click', async function() {
                 const originalUrl = document.getElementById('originalUrl').value;
                 const customPath = document.getElementById('customPath').value;
                 const expiration = document.getElementById('expiration').value;
-                const buttonOriginalText = '生成量子链接';
 
                 urlError.classList.remove('show');
                 pathError.classList.remove('show');
@@ -337,8 +363,7 @@ const HTML = `
                     return;
                 }
 
-                generateBtn.disabled = true;
-                generateBtn.innerHTML = '生成中... <span class="loading"></span>';
+                showLoading();
 
                 try {
                     const response = await fetch('/create', {
@@ -369,10 +394,9 @@ const HTML = `
                     }
                 } catch (error) {
                     console.error('Request failed:', error);
-                    alert('网络请求失败: ' + error.message);
+                    alert('网络请求失败，请稍后重试');
                 } finally {
-                    generateBtn.disabled = false;
-                    generateBtn.textContent = buttonOriginalText;
+                    hideLoading();
                 }
             });
         });
@@ -388,41 +412,151 @@ const expirationOptions = {
     '0': null
 };
 
+// 安全响应头配置
+const securityHeaders = {
+    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
+// 缓存控制配置
+const cacheControl = {
+    'static': 'public, max-age=86400', // 静态资源缓存24小时
+    'redirect': 'public, max-age=3600', // 重定向缓存1小时
+    'api': 'no-store' // API请求不缓存
+};
+
+// 添加安全头和其他响应头
+function addResponseHeaders(headers = {}, type = 'api') {
+    return {
+        ...headers,
+        ...securityHeaders,
+        'Cache-Control': cacheControl[type]
+    };
+}
+
+// URL有效性检查函数
+async function isValidTargetUrl(url) {
+    try {
+        const response = await fetch(url, {
+            method: 'HEAD',
+            headers: { 'User-Agent': 'URL-Validator-Bot' }
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('URL validation error:', error);
+        return false;
+    }
+}
+
+// 速率限制检查函数
+async function checkRateLimit(ip, env) {
+    const key = `ratelimit:${ip}`;
+    const limit = 100; // 每IP每小时最多100个请求
+    const window = 3600; // 1小时窗口期
+
+    let counter = await env.URL_DB.get(key);
+    counter = counter ? parseInt(counter) : 0;
+
+    if (counter >= limit) {
+        return false;
+    }
+
+    await env.URL_DB.put(key, counter + 1, { expirationTtl: window });
+    return true;
+}
+
+// 清理过期URL的函数
+async function cleanupExpiredUrls(env) {
+    const now = Date.now();
+    let cursor;
+    
+    do {
+        const list = await env.URL_DB.list({ cursor });
+        cursor = list.cursor;
+        
+        for (const key of list.keys) {
+            try {
+                const value = await env.URL_DB.get(key.name);
+                const data = JSON.parse(value);
+                
+                if (data.expires && data.expires < now) {
+                    await env.URL_DB.delete(key.name);
+                }
+            } catch (error) {
+                console.error(`清理过期数据失败: ${key.name}`, error);
+            }
+        }
+    } while (cursor);
+}
+
 export default {
     async fetch(request, env) {
         try {
+            // 验证必要的环境变量
+            if (!env.URL_DB) {
+                return new Response('配置错误：缺少数据库绑定', { 
+                    status: 500,
+                    headers: addResponseHeaders({ 'Content-Type': 'text/plain;charset=utf-8' })
+                });
+            }
+
+            // 添加请求大小限制
+            const contentLength = request.headers.get('content-length');
+            if (contentLength && parseInt(contentLength) > 1024 * 1024) { // 1MB限制
+                return new Response('请求体过大', { 
+                    status: 413,
+                    headers: addResponseHeaders({ 'Content-Type': 'text/plain;charset=utf-8' })
+                });
+            }
+
             const requestUrl = new URL(request.url);
             const path = requestUrl.pathname.slice(1);
             
             if (request.method === 'OPTIONS') {
                 return new Response(null, {
-                    headers: {
+                    headers: addResponseHeaders({
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                         'Access-Control-Allow-Headers': 'Content-Type',
                         'Access-Control-Max-Age': '86400'
-                    }
+                    })
                 });
             }
 
             if (path === '' || path === 'index.html') {
                 return new Response(HTML, {
-                    headers: { 
+                    headers: addResponseHeaders({ 
                         'Content-Type': 'text/html;charset=utf-8'
-                    }
+                    }, 'static')
                 });
             }
 
             if (path === 'create' && request.method === 'POST') {
+                const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+                
+                // 检查速率限制
+                if (!await checkRateLimit(ip, env)) {
+                    return new Response(JSON.stringify({ error: '请求过于频繁，请稍后再试' }), {
+                        status: 429,
+                        headers: addResponseHeaders({ 
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        })
+                    });
+                }
+
                 const data = await request.json();
                 
                 if (!data.originalUrl || !data.customPath) {
                     return new Response(JSON.stringify({ error: '缺少必要参数' }), {
                         status: 400,
-                        headers: { 
+                        headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': '*'
-                        }
+                        })
                     });
                 }
 
@@ -431,20 +565,31 @@ export default {
                 } catch {
                     return new Response(JSON.stringify({ error: '无效的URL格式' }), {
                         status: 400,
-                        headers: { 
+                        headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': '*'
-                        }
+                        })
                     });
                 }
 
                 if (!/^[A-Za-z0-9_-]{3,20}$/.test(data.customPath)) {
                     return new Response(JSON.stringify({ error: '无效的自定义后缀格式' }), {
                         status: 400,
-                        headers: { 
+                        headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': '*'
-                        }
+                        })
+                    });
+                }
+
+                // 检查URL可访问性
+                if (!await isValidTargetUrl(data.originalUrl)) {
+                    return new Response(JSON.stringify({ error: '目标URL不可访问' }), {
+                        status: 400,
+                        headers: addResponseHeaders({ 
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        })
                     });
                 }
 
@@ -452,10 +597,10 @@ export default {
                 if (existing) {
                     return new Response(JSON.stringify({ error: '后缀已被占用' }), {
                         status: 409,
-                        headers: { 
+                        headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': '*'
-                        }
+                        })
                     });
                 }
 
@@ -466,7 +611,9 @@ export default {
                     url: data.originalUrl,
                     expires: expiration ? Date.now() + expiration * 1000 : null,
                     createdAt: Date.now(),
-                    createdBy: request.headers.get('cf-connecting-ip') || 'anonymous'
+                    createdBy: request.headers.get('cf-connecting-ip') || 'anonymous',
+                    lastAccessed: null,
+                    accessCount: 0
                 };
 
                 await env.URL_DB.put(data.customPath, JSON.stringify(urlData));
@@ -474,23 +621,23 @@ export default {
                 return new Response(JSON.stringify({
                     shortUrl: `${requestUrl.origin}/${data.customPath}`
                 }), {
-                    headers: { 
+                    headers: addResponseHeaders({ 
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*'
-                    }
+                    })
                 });
             }
 
-            // 短链接重定向
+            // 处理短链接重定向
             if (path !== '' && path !== 'create') {
                 const record = await env.URL_DB.get(path);
                 if (!record) {
                     return new Response('短链接不存在', { 
                         status: 404,
-                        headers: { 
+                        headers: addResponseHeaders({ 
                             'Content-Type': 'text/plain;charset=utf-8',
                             'Access-Control-Allow-Origin': '*'
-                        }
+                        })
                     });
                 }
 
@@ -501,10 +648,10 @@ export default {
                     await env.URL_DB.delete(path);
                     return new Response('短链接已过期', { 
                         status: 410,
-                        headers: { 
+                        headers: addResponseHeaders({ 
                             'Content-Type': 'text/plain;charset=utf-8',
                             'Access-Control-Allow-Origin': '*'
-                        }
+                        })
                     });
                 }
 
@@ -518,20 +665,31 @@ export default {
                 // 异步更新统计数据
                 env.URL_DB.put(path, JSON.stringify(updatedData)).catch(console.error);
 
-                // 执行重定向，确保URL是完整的
+                // 执行重定向
                 const targetUrl = urlData.url.startsWith('http') ? urlData.url : `https://${urlData.url}`;
                 return Response.redirect(targetUrl, 302);
             }
 
+            return new Response('Not Found', { 
+                status: 404,
+                headers: addResponseHeaders({ 
+                    'Content-Type': 'text/plain;charset=utf-8'
+                })
+            });
+
         } catch (error) {
             console.error('Worker error:', error);
-            return new Response('服务器错误: ' + error.message, { 
+            return new Response('服务器错误', { 
                 status: 500,
-                headers: { 
-                    'Content-Type': 'text/plain;charset=utf-8',
-                    'Access-Control-Allow-Origin': '*'
-                }
+                headers: addResponseHeaders({ 
+                    'Content-Type': 'text/plain;charset=utf-8'
+                })
             });
         }
+    },
+
+    // 添加定时任务处理过期数据清理
+    async scheduled(event, env, ctx) {
+        ctx.waitUntil(cleanupExpiredUrls(env));
     }
 };
