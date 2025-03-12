@@ -404,6 +404,7 @@ const HTML = `
 </body>
 </html>`;
 
+// 有效期选项配置
 const expirationOptions = {
     '604800': 7 * 24 * 3600,
     '2592000': 30 * 24 * 3600,
@@ -428,7 +429,7 @@ const cacheControl = {
     'api': 'no-store' // API请求不缓存
 };
 
-// 添加安全头和其他响应头
+// 添加响应头函数
 function addResponseHeaders(headers = {}, type = 'api') {
     return {
         ...headers,
@@ -437,21 +438,28 @@ function addResponseHeaders(headers = {}, type = 'api') {
     };
 }
 
-// URL有效性检查函数
+// URL有效性检查函数 - 使用更高效的方式
 async function isValidTargetUrl(url) {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+        
         const response = await fetch(url, {
             method: 'HEAD',
-            headers: { 'User-Agent': 'URL-Validator-Bot' }
+            headers: { 'User-Agent': 'URL-Validator-Bot' },
+            redirect: 'follow',
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         return response.ok;
     } catch (error) {
-        console.error('URL validation error:', error);
+        console.error('URL validation error:', error.name);
         return false;
     }
 }
 
-// 速率限制检查函数
+// 速率限制检查函数 - 使用KV存储
 async function checkRateLimit(ip, env) {
     const key = `ratelimit:${ip}`;
     const limit = 100; // 每IP每小时最多100个请求
@@ -468,28 +476,42 @@ async function checkRateLimit(ip, env) {
     return true;
 }
 
-// 清理过期URL的函数
+// 清理过期URL的函数 - 批量处理提高效率
 async function cleanupExpiredUrls(env) {
     const now = Date.now();
+    const batchSize = 100; // 每批处理100条记录
     let cursor;
+    let deletionPromises = [];
     
-    do {
-        const list = await env.URL_DB.list({ cursor });
-        cursor = list.cursor;
-        
-        for (const key of list.keys) {
-            try {
-                const value = await env.URL_DB.get(key.name);
-                const data = JSON.parse(value);
-                
-                if (data.expires && data.expires < now) {
-                    await env.URL_DB.delete(key.name);
+    try {
+        do {
+            const list = await env.URL_DB.list({ cursor, limit: batchSize });
+            cursor = list.cursor;
+            
+            for (const key of list.keys) {
+                try {
+                    const value = await env.URL_DB.get(key.name);
+                    if (!value) continue;
+                    
+                    const data = JSON.parse(value);
+                    
+                    if (data.expires && data.expires < now) {
+                        deletionPromises.push(env.URL_DB.delete(key.name));
+                    }
+                } catch (error) {
+                    console.error(`清理数据解析失败: ${key.name}`, error);
                 }
-            } catch (error) {
-                console.error(`清理过期数据失败: ${key.name}`, error);
             }
-        }
-    } while (cursor);
+            
+            // 每批次等待删除完成
+            if (deletionPromises.length > 0) {
+                await Promise.allSettled(deletionPromises);
+                deletionPromises = [];
+            }
+        } while (cursor);
+    } catch (error) {
+        console.error('清理过期URL时发生错误:', error);
+    }
 }
 
 export default {
@@ -505,7 +527,7 @@ export default {
 
             // 添加请求大小限制
             const contentLength = request.headers.get('content-length');
-            if (contentLength && parseInt(contentLength) > 1024 * 1024) { // 1MB限制
+            if (contentLength && parseInt(contentLength) > 512 * 1024) { // 降低到512KB限制
                 return new Response('请求体过大', { 
                     status: 413,
                     headers: addResponseHeaders({ 'Content-Type': 'text/plain;charset=utf-8' })
@@ -515,6 +537,7 @@ export default {
             const requestUrl = new URL(request.url);
             const path = requestUrl.pathname.slice(1);
             
+            // 处理CORS预检请求
             if (request.method === 'OPTIONS') {
                 return new Response(null, {
                     headers: addResponseHeaders({
@@ -526,6 +549,7 @@ export default {
                 });
             }
 
+            // 返回主页
             if (path === '' || path === 'index.html') {
                 return new Response(HTML, {
                     headers: addResponseHeaders({ 
@@ -534,8 +558,9 @@ export default {
                 });
             }
 
+            // 处理创建短链接请求
             if (path === 'create' && request.method === 'POST') {
-                const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+                const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || 'unknown';
                 
                 // 检查速率限制
                 if (!await checkRateLimit(ip, env)) {
@@ -543,13 +568,27 @@ export default {
                         status: 429,
                         headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
+                            'Access-Control-Allow-Origin': '*',
+                            'Retry-After': '3600'
                         })
                     });
                 }
 
-                const data = await request.json();
+                // 解析请求体
+                let data;
+                try {
+                    data = await request.json();
+                } catch (e) {
+                    return new Response(JSON.stringify({ error: '无效的JSON格式' }), {
+                        status: 400,
+                        headers: addResponseHeaders({ 
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        })
+                    });
+                }
                 
+                // 验证必要参数
                 if (!data.originalUrl || !data.customPath) {
                     return new Response(JSON.stringify({ error: '缺少必要参数' }), {
                         status: 400,
@@ -560,6 +599,7 @@ export default {
                     });
                 }
 
+                // 验证URL格式
                 try {
                     new URL(data.originalUrl);
                 } catch {
@@ -572,6 +612,7 @@ export default {
                     });
                 }
 
+                // 验证自定义后缀格式
                 if (!/^[A-Za-z0-9_-]{3,20}$/.test(data.customPath)) {
                     return new Response(JSON.stringify({ error: '无效的自定义后缀格式' }), {
                         status: 400,
@@ -582,9 +623,9 @@ export default {
                     });
                 }
 
-                // 检查URL可访问性
+                // 检查URL可访问性 - 可选步骤，可以注释掉以提高性能
                 if (!await isValidTargetUrl(data.originalUrl)) {
-                    return new Response(JSON.stringify({ error: '目标URL不可访问' }), {
+                    return new Response(JSON.stringify({ error: '目标URL不可访问或响应超时' }), {
                         status: 400,
                         headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
@@ -593,6 +634,7 @@ export default {
                     });
                 }
 
+                // 检查后缀是否已被占用
                 const existing = await env.URL_DB.get(data.customPath);
                 if (existing) {
                     return new Response(JSON.stringify({ error: '后缀已被占用' }), {
@@ -604,20 +646,25 @@ export default {
                     });
                 }
 
+                // 计算过期时间
                 const expiration = data.expiration in expirationOptions ?
                     expirationOptions[data.expiration] : null;
 
+                // 构建URL数据对象
                 const urlData = {
                     url: data.originalUrl,
                     expires: expiration ? Date.now() + expiration * 1000 : null,
                     createdAt: Date.now(),
-                    createdBy: request.headers.get('cf-connecting-ip') || 'anonymous',
+                    createdBy: ip,
                     lastAccessed: null,
                     accessCount: 0
                 };
 
-                await env.URL_DB.put(data.customPath, JSON.stringify(urlData));
+                // 存储URL数据
+                await env.URL_DB.put(data.customPath, JSON.stringify(urlData), 
+                    expiration ? { expirationTtl: expiration } : undefined);
 
+                // 返回成功响应
                 return new Response(JSON.stringify({
                     shortUrl: `${requestUrl.origin}/${data.customPath}`
                 }), {
@@ -629,47 +676,84 @@ export default {
             }
 
             // 处理短链接重定向
-            if (path !== '' && path !== 'create') {
+            if (path !== '' && path !== 'create' && path !== 'manifest.json') {
                 const record = await env.URL_DB.get(path);
                 if (!record) {
                     return new Response('短链接不存在', { 
                         status: 404,
                         headers: addResponseHeaders({ 
-                            'Content-Type': 'text/plain;charset=utf-8',
-                            'Access-Control-Allow-Origin': '*'
+                            'Content-Type': 'text/plain;charset=utf-8'
                         })
                     });
                 }
 
-                const urlData = JSON.parse(record);
+                let urlData;
+                try {
+                    urlData = JSON.parse(record);
+                } catch (e) {
+                    return new Response('短链接数据损坏', { 
+                        status: 500,
+                        headers: addResponseHeaders({ 
+                            'Content-Type': 'text/plain;charset=utf-8'
+                        })
+                    });
+                }
                 
                 // 检查链接是否过期
                 if (urlData.expires && Date.now() > urlData.expires) {
-                    await env.URL_DB.delete(path);
+                    // 异步删除过期链接
+                    env.URL_DB.delete(path).catch(console.error);
+                    
                     return new Response('短链接已过期', { 
                         status: 410,
                         headers: addResponseHeaders({ 
-                            'Content-Type': 'text/plain;charset=utf-8',
-                            'Access-Control-Allow-Origin': '*'
+                            'Content-Type': 'text/plain;charset=utf-8'
                         })
                     });
                 }
 
-                // 更新访问统计
+                // 更新访问统计 - 异步操作，不阻塞重定向
                 const updatedData = {
                     ...urlData,
                     lastAccessed: Date.now(),
                     accessCount: (urlData.accessCount || 0) + 1
                 };
                 
-                // 异步更新统计数据
-                env.URL_DB.put(path, JSON.stringify(updatedData)).catch(console.error);
+                env.URL_DB.put(path, JSON.stringify(updatedData), 
+                    urlData.expires ? { expirationTtl: Math.floor((urlData.expires - Date.now()) / 1000) } : undefined)
+                    .catch(console.error);
 
                 // 执行重定向
                 const targetUrl = urlData.url.startsWith('http') ? urlData.url : `https://${urlData.url}`;
                 return Response.redirect(targetUrl, 302);
             }
 
+            // 处理 manifest.json 请求
+            if (path === 'manifest.json') {
+                const manifest = {
+                    "name": "CyberLink 量子短链",
+                    "short_name": "CyberLink",
+                    "start_url": "/",
+                    "display": "standalone",
+                    "background_color": "#0a0a12",
+                    "theme_color": "#4d7cff",
+                    "icons": [
+                        {
+                            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='192' height='192'%3E%3Cpath fill='%234d7cff' d='M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z'/%3E%3C/svg%3E",
+                            "sizes": "192x192",
+                            "type": "image/svg+xml"
+                        }
+                    ]
+                };
+                
+                return new Response(JSON.stringify(manifest), {
+                    headers: addResponseHeaders({ 
+                        'Content-Type': 'application/json'
+                    }, 'static')
+                });
+            }
+
+            // 处理其他请求
             return new Response('Not Found', { 
                 status: 404,
                 headers: addResponseHeaders({ 
