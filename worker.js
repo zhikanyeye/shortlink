@@ -4,10 +4,7 @@ const HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberLink - 量子短链服务</title>
-    <!-- 添加 PWA 支持 -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#4d7cff">
+    <title>📎青云量子短链</title>
     <style>
         :root {
             --neon-blue: #4d7cff;
@@ -39,7 +36,6 @@ const HTML = `
         }
 
         .cyber-container {
-            background: rgba(10, 10, 18, 0.95);
             border: 2px solid var(--neon-blue);
             border-radius: 12px;
             padding: 2rem;
@@ -244,7 +240,7 @@ const HTML = `
 <body>
     <div id="loading-indicator">处理中...</div>
     <div class="cyber-container">
-        <h1>⚡ CyberLink 量子短链</h1>
+        <h1>📎 青云量子短链</h1>
         
         <div class="input-group">
             <input type="url" id="originalUrl" 
@@ -345,6 +341,7 @@ const HTML = `
                 pathError.classList.remove('show');
                 document.getElementById('result').classList.remove('active');
 
+                // 验证表单
                 if (!validateInput(document.getElementById('originalUrl'), urlError, '请输入原始链接')) {
                     return;
                 }
@@ -366,14 +363,20 @@ const HTML = `
                 showLoading();
 
                 try {
+                    const requestData = {
+                        originalUrl,
+                        customPath,
+                        expiration
+                    };
+
                     const response = await fetch('/create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ originalUrl, customPath, expiration })
+                        body: JSON.stringify(requestData)
                     });
-
+                    
                     const data = await response.json();
                     
                     if (response.ok) {
@@ -393,7 +396,7 @@ const HTML = `
                         }
                     }
                 } catch (error) {
-                    console.error('Request failed:', error);
+                    console.error('请求失败:', error);
                     alert('网络请求失败，请稍后重试');
                 } finally {
                     hideLoading();
@@ -402,7 +405,8 @@ const HTML = `
         });
     </script>
 </body>
-</html>`;
+</html>
+`;
 
 // 有效期选项配置
 const expirationOptions = {
@@ -424,9 +428,9 @@ const securityHeaders = {
 
 // 缓存控制配置
 const cacheControl = {
-    'static': 'public, max-age=86400', // 静态资源缓存24小时
-    'redirect': 'public, max-age=3600', // 重定向缓存1小时
-    'api': 'no-store' // API请求不缓存
+    'static': 'public, max-age=86400',
+    'redirect': 'public, max-age=3600',
+    'api': 'no-store'
 };
 
 // 添加响应头函数
@@ -438,15 +442,15 @@ function addResponseHeaders(headers = {}, type = 'api') {
     };
 }
 
-// URL有效性检查函数 - 使用更高效的方式
+// URL有效性检查函数
 async function isValidTargetUrl(url) {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
         
         const response = await fetch(url, {
             method: 'HEAD',
-            headers: { 'User-Agent': 'URL-Validator-Bot' },
+            headers: { 'User-Agent': 'QingYun-URL-Validator-Bot' },
             redirect: 'follow',
             signal: controller.signal
         });
@@ -459,11 +463,11 @@ async function isValidTargetUrl(url) {
     }
 }
 
-// 速率限制检查函数 - 使用KV存储
+// 速率限制检查函数
 async function checkRateLimit(ip, env) {
     const key = `ratelimit:${ip}`;
-    const limit = 100; // 每IP每小时最多100个请求
-    const window = 3600; // 1小时窗口期
+    const limit = 100;
+    const window = 3600;
 
     let counter = await env.URL_DB.get(key);
     counter = counter ? parseInt(counter) : 0;
@@ -476,10 +480,10 @@ async function checkRateLimit(ip, env) {
     return true;
 }
 
-// 清理过期URL的函数 - 批量处理提高效率
+// 清理过期URL的函数
 async function cleanupExpiredUrls(env) {
     const now = Date.now();
-    const batchSize = 100; // 每批处理100条记录
+    const batchSize = 100;
     let cursor;
     let deletionPromises = [];
     
@@ -503,7 +507,6 @@ async function cleanupExpiredUrls(env) {
                 }
             }
             
-            // 每批次等待删除完成
             if (deletionPromises.length > 0) {
                 await Promise.allSettled(deletionPromises);
                 deletionPromises = [];
@@ -527,7 +530,7 @@ export default {
 
             // 添加请求大小限制
             const contentLength = request.headers.get('content-length');
-            if (contentLength && parseInt(contentLength) > 512 * 1024) { // 降低到512KB限制
+            if (contentLength && parseInt(contentLength) > 512 * 1024) {
                 return new Response('请求体过大', { 
                     status: 413,
                     headers: addResponseHeaders({ 'Content-Type': 'text/plain;charset=utf-8' })
@@ -560,7 +563,9 @@ export default {
 
             // 处理创建短链接请求
             if (path === 'create' && request.method === 'POST') {
-                const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || 'unknown';
+                const ip = request.headers.get('cf-connecting-ip') || 
+                          request.headers.get('x-real-ip') || 
+                          'unknown';
                 
                 // 检查速率限制
                 if (!await checkRateLimit(ip, env)) {
@@ -577,13 +582,19 @@ export default {
                 // 解析请求体
                 let data;
                 try {
-                    data = await request.json();
+                    const text = await request.text();
+                    console.log('收到的原始数据:', text);
+                    data = JSON.parse(text);
                 } catch (e) {
-                    return new Response(JSON.stringify({ error: '无效的JSON格式' }), {
+                    console.error('JSON解析错误:', e);
+                    return new Response(JSON.stringify({ 
+                        error: '无效的JSON格式',
+                        details: e.message
+                    }), {
                         status: 400,
                         headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
+                            'Access-Control-Allow-Origin': '*' 
                         })
                     });
                 }
@@ -594,7 +605,7 @@ export default {
                         status: 400,
                         headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
+                            'Access-Control-Allow-Origin': '*' 
                         })
                     });
                 }
@@ -607,7 +618,7 @@ export default {
                         status: 400,
                         headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
+                            'Access-Control-Allow-Origin': '*' 
                         })
                     });
                 }
@@ -618,18 +629,18 @@ export default {
                         status: 400,
                         headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
+                            'Access-Control-Allow-Origin': '*' 
                         })
                     });
                 }
 
-                // 检查URL可访问性 - 可选步骤，可以注释掉以提高性能
+                // 检查URL可访问性
                 if (!await isValidTargetUrl(data.originalUrl)) {
                     return new Response(JSON.stringify({ error: '目标URL不可访问或响应超时' }), {
                         status: 400,
                         headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
+                            'Access-Control-Allow-Origin': '*' 
                         })
                     });
                 }
@@ -641,7 +652,7 @@ export default {
                         status: 409,
                         headers: addResponseHeaders({ 
                             'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
+                            'Access-Control-Allow-Origin': '*' 
                         })
                     });
                 }
@@ -670,7 +681,7 @@ export default {
                 }), {
                     headers: addResponseHeaders({ 
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
+                        'Access-Control-Allow-Origin': '*' 
                     })
                 });
             }
@@ -682,7 +693,7 @@ export default {
                     return new Response('短链接不存在', { 
                         status: 404,
                         headers: addResponseHeaders({ 
-                            'Content-Type': 'text/plain;charset=utf-8'
+                            'Content-Type': 'text/plain;charset=utf-8' 
                         })
                     });
                 }
@@ -694,25 +705,24 @@ export default {
                     return new Response('短链接数据损坏', { 
                         status: 500,
                         headers: addResponseHeaders({ 
-                            'Content-Type': 'text/plain;charset=utf-8'
+                            'Content-Type': 'text/plain;charset=utf-8' 
                         })
                     });
                 }
                 
                 // 检查链接是否过期
                 if (urlData.expires && Date.now() > urlData.expires) {
-                    // 异步删除过期链接
                     env.URL_DB.delete(path).catch(console.error);
                     
                     return new Response('短链接已过期', { 
                         status: 410,
                         headers: addResponseHeaders({ 
-                            'Content-Type': 'text/plain;charset=utf-8'
+                            'Content-Type': 'text/plain;charset=utf-8' 
                         })
                     });
                 }
 
-                // 更新访问统计 - 异步操作，不阻塞重定向
+                // 更新访问统计
                 const updatedData = {
                     ...urlData,
                     lastAccessed: Date.now(),
@@ -724,15 +734,14 @@ export default {
                     .catch(console.error);
 
                 // 执行重定向
-                const targetUrl = urlData.url.startsWith('http') ? urlData.url : `https://${urlData.url}`;
-                return Response.redirect(targetUrl, 302);
+                return Response.redirect(urlData.url, 302);
             }
 
             // 处理 manifest.json 请求
             if (path === 'manifest.json') {
                 const manifest = {
-                    "name": "CyberLink 量子短链",
-                    "short_name": "CyberLink",
+                    "name": "📎青云量子短链",
+                    "short_name": "青云短链",
                     "start_url": "/",
                     "display": "standalone",
                     "background_color": "#0a0a12",
@@ -757,7 +766,7 @@ export default {
             return new Response('Not Found', { 
                 status: 404,
                 headers: addResponseHeaders({ 
-                    'Content-Type': 'text/plain;charset=utf-8'
+                    'Content-Type': 'text/plain;charset=utf-8' 
                 })
             });
 
@@ -766,7 +775,7 @@ export default {
             return new Response('服务器错误', { 
                 status: 500,
                 headers: addResponseHeaders({ 
-                    'Content-Type': 'text/plain;charset=utf-8'
+                    'Content-Type': 'text/plain;charset=utf-8' 
                 })
             });
         }
