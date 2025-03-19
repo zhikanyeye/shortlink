@@ -11,6 +11,8 @@ const HTML = `
             --neon-purple: #9d4dff;
             --cyber-black: #0a0a12;
             --cyber-gray: #1a1a2a;
+            --gold-light: #FFD700;
+            --gold-dark: #DAA520;
         }
 
         * {
@@ -69,14 +71,28 @@ const HTML = `
             100% { transform: translate(-25%,-25%) rotate(360deg); }
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2.5rem;
+        .emoji-clip {
+            background: linear-gradient(45deg, var(--gold-light), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            margin-right: 4px;
+        }
+
+        h1 .title-text {
             background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 0 0 20px rgba(77, 124, 255, 0.4);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .input-group {
@@ -240,7 +256,7 @@ const HTML = `
 <body>
     <div id="loading-indicator">处理中...</div>
     <div class="cyber-container">
-        <h1>📎 青云量子短链</h1>
+        <h1><span class="emoji-clip">📎</span><span class="title-text">青云量子短链</span></h1>
         
         <div class="input-group">
             <input type="url" id="originalUrl" 
@@ -341,7 +357,6 @@ const HTML = `
                 pathError.classList.remove('show');
                 document.getElementById('result').classList.remove('active');
 
-                // 验证表单
                 if (!validateInput(document.getElementById('originalUrl'), urlError, '请输入原始链接')) {
                     return;
                 }
