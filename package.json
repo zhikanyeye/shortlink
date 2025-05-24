@@ -1,0 +1,39 @@
+{
+  "name": "shortlink",
+  "version": "1.0.0",
+  "description": "青云量子短链 - 基于 Cloudflare Workers 的短链接生成器",
+  "main": "worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "tail": "wrangler tail",
+    "kv:create": "wrangler kv:namespace create URL_DB",
+    "kv:create:preview": "wrangler kv:namespace create URL_DB --preview",
+    "kv:list": "wrangler kv:key list --binding URL_DB",
+    "kv:put": "wrangler kv:key put",
+    "kv:get": "wrangler kv:key get",
+    "kv:delete": "wrangler kv:key delete"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "shortlink",
+    "url-shortener",
+    "serverless"
+  ],
+  "author": "zhikanyeye",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.57.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhikanyeye/shortlink.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zhikanyeye/shortlink/issues"
+  },
+  "homepage": "https://github.com/zhikanyeye/shortlink#readme"
+}
