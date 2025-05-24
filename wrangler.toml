@@ -1,0 +1,56 @@
+name = "shortlink"
+main = "worker.js"
+compatibility_date = "2024-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+# KV 命名空间绑定
+[[kv_namespaces]]
+binding = "URL_DB"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"
+
+# 环境变量配置
+[env.production]
+name = "shortlink-prod"
+kv_namespaces = [
+  { binding = "URL_DB", id = "your-production-kv-id" }
+]
+
+[env.staging]
+name = "shortlink-staging" 
+kv_namespaces = [
+  { binding = "URL_DB", id = "your-staging-kv-id" }
+]
+
+# 路由配置
+[triggers]
+crons = ["0 2 * * *"]  # 每天凌晨2点执行清理任务
+
+# 构建配置
+[build]
+command = ""
+cwd = ""
+watch_dir = ""
+
+# 变量配置
+[vars]
+ENVIRONMENT = "production"
+
+# 部署配置
+[placement]
+mode = "smart"
+
+# 限制配置
+[limits]
+cpu_ms = 100
+
+# 自定义域名配置（可选）
+# [[routes]]
+# pattern = "short.yourdomain.com/*"
+# zone_name = "yourdomain.com"
+
+# 开发配置
+[dev]
+ip = "127.0.0.1"
+port = 8787
+local_protocol = "http"
