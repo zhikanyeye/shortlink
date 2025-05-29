@@ -4,10 +4,10 @@ const HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>📎青云量子短链</title>
+    <title>青云量子短链</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojM2I4MmY2O3N0b3Atb3BhY2l0eToxIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3R5bGU9InN0b3AtY29sb3I6IzhiNWNmNjtzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWM0ODk5O3N0b3Atb3BhY2l0eToxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzBmMTcyYSIvPgogIDxyZWN0IHg9IjIiIHk9IjIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+CiAgPHBhdGggZD0iTTggMTJoMTZ2MkgxNnY2SDh2LThaIiBmaWxsPSJ3aGl0ZSIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMTAiIHI9IjIiIGZpbGw9IndoaXRlIi8+CiAgPGNpcmNsZSBjeD0iMjIiIGN5PSIyMiIgcj0iMiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZmF2aWNvbkdyYWRpZW50IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzNiODJmNjtzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjVjZjY7c3RvcC1vcGFjaXR5OjEiIC8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2VjNDg5OTtzdG9wLW9wYWNpdHk6MSIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgcng9IjgiIGZpbGw9IiMwZjE3MmEiIHN0cm9rZT0idXJsKCNmYXZpY29uR3JhZGllbnQpIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8cGF0aCBkPSJNMTAgMTZjMC0yLjIgMS44LTQgNC00aDJ2MmgtMmMtMS4xIDAtMiAuOS0yIDJzLjkgMiAyIDJoMnYyaC0yYy0yLjIgMC00LTEuOC00LTR6IiBmaWxsPSJ1cmwoI2Zhdmljb25HcmFkaWVudCkiLz4KICA8cGF0aCBkPSJNMjIgMTZjMCAyLjItMS44IDQtNCA0aC0ydi0yaDJjMS4xIDAgMi0uOSAyLTJzLS45LTItMi0yaC0ydi0yaDJjMi4yIDAgNCAxLjggNCA0eiIgZmlsbD0idXJsKCNmYXZpY29uR3JhZGllbnQpIi8+CiAgPHJlY3QgeD0iMTMiIHk9IjE1IiB3aWR0aD0iNiIgaGVpZ2h0PSIyIiByeD0iMSIgZmlsbD0idXJsKCNmYXZpY29uR3JhZGllbnQpIi8+Cjwvc3ZnPg==">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -108,7 +108,7 @@ const HTML = `
             border-radius: 24px;
             padding: 2.5rem;
             width: 100%;
-            max-width: 500px;
+            max-width: 480px;
             box-shadow: var(--shadow-xl);
             backdrop-filter: blur(20px);
             position: relative;
@@ -134,59 +134,40 @@ const HTML = `
 
         .header {
             text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        /* Logo样式 */
-        .logo {
-            display: inline-block;
-            margin-bottom: 1rem;
-        }
-
-        .logo svg {
-            width: 64px;
-            height: 64px;
-            filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
-            transition: all 0.3s ease;
-        }
-
-        .logo:hover svg {
-            transform: scale(1.1) rotate(5deg);
-            filter: drop-shadow(0 6px 20px rgba(59, 130, 246, 0.4));
+            margin-bottom: 2rem;
         }
 
         .title {
-            font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
             font-weight: 700;
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            text-align: center;
-            width: 100%;
-        }
-
-        .emoji {
-            font-size: 1.2em;
-            filter: drop-shadow(0 4px 8px rgba(245, 158, 11, 0.4));
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
         }
 
         .subtitle {
             color: var(--muted-text);
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .feature-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(10px);
         }
 
         .form-group {
@@ -412,20 +393,6 @@ const HTML = `
             font-weight: 500;
         }
 
-        .feature-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--primary-blue);
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-        }
-
         .footer {
             text-align: center;
             margin-top: 2rem;
@@ -433,7 +400,7 @@ const HTML = `
             font-size: 0.8rem;
         }
 
-        /* 移动端优化 - 修复版本 */
+        /* 移动端优化 */
         @media (max-width: 640px) {
             .container {
                 padding: 1rem;
@@ -445,19 +412,20 @@ const HTML = `
                 padding: 1.5rem;
                 border-radius: 20px;
                 margin: 0.5rem 0;
-            }
-
-            .logo svg {
-                width: 48px;
-                height: 48px;
+                max-width: 100%;
             }
 
             .title {
                 font-size: 1.5rem;
-                gap: 0.3rem;
-                text-align: center;
-                width: 100%;
-                flex-wrap: wrap;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+            }
+
+            .feature-badge {
+                font-size: 0.8rem;
+                padding: 0.5rem 1rem;
             }
 
             .form-input, .form-select {
@@ -570,60 +538,10 @@ const HTML = `
     <div class="container">
         <div class="main-card">
             <div class="header">
-                <!-- Logo -->
-                <div class="logo">
-                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                                <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
-                            </linearGradient>
-                            <filter id="glow">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                <feMerge> 
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
-                        </defs>
-                        
-                        <!-- 背景圆角矩形 -->
-                        <rect width="64" height="64" rx="16" fill="#0f172a" stroke="url(#logoGradient)" stroke-width="2"/>
-                        
-                        <!-- 链接图标 -->
-                        <g filter="url(#glow)">
-                            <!-- 左边链环 -->
-                            <path d="M20 32c0-4.4 3.6-8 8-8h4v4h-4c-2.2 0-4 1.8-4 4s1.8 4 4 4h4v4h-4c-4.4 0-8-3.6-8-8z" fill="url(#logoGradient)"/>
-                            <!-- 右边链环 -->
-                            <path d="M44 32c0 4.4-3.6 8-8 8h-4v-4h4c2.2 0 4-1.8 4-4s-1.8-4-4-4h-4v-4h4c4.4 0 8 3.6 8 8z" fill="url(#logoGradient)"/>
-                            <!-- 中间连接线 -->
-                            <rect x="26" y="30" width="12" height="4" rx="2" fill="url(#logoGradient)"/>
-                        </g>
-                        
-                        <!-- 量子粒子效果 -->
-                        <circle cx="18" cy="18" r="2" fill="#f59e0b" opacity="0.8">
-                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="46" cy="18" r="1.5" fill="#10b981" opacity="0.6">
-                            <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="18" cy="46" r="1.5" fill="#ec4899" opacity="0.7">
-                            <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="46" cy="46" r="2" fill="#3b82f6" opacity="0.5">
-                            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="1.8s" repeatCount="indefinite"/>
-                        </circle>
-                    </svg>
-                </div>
-                
                 <div class="feature-badge">
                     ⚡ 极速生成 · 🔒 安全可靠
                 </div>
-                <h1 class="title">
-                    <span class="emoji">📎</span>
-                    青云量子短链
-                </h1>
+                <h1 class="title">青云量子短链</h1>
                 <p class="subtitle">将长链接转换为简洁易记的短链接</p>
             </div>
 
@@ -1234,7 +1152,7 @@ export default {
             // 处理 manifest.json 请求
             if (path === 'manifest.json') {
                 const manifest = {
-                    "name": "📎青云量子短链",
+                    "name": "青云量子短链",
                     "short_name": "青云短链",
                     "start_url": "/",
                     "display": "standalone",
@@ -1242,12 +1160,12 @@ export default {
                     "theme_color": "#3b82f6",
                     "icons": [
                         {
-                            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJsb2dvR3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzYjgyZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjVjZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWM0ODk5O3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDgiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNjAgOTZjMC0xMy4yIDEwLjgtMjQgMjQtMjRoMTJ2MTJIODRjLTYuNiAwLTEyIDUuNC0xMiAxMnM1LjQgMTIgMTIgMTJoMTJ2MTJIODRjLTEzLjIgMC0yNC0xMC44LTI0LTI0eiIgZmlsbD0idXJsKCNsb2dvR3JhZGllbnQpIi8+PHBhdGggZD0iTTEzMiA5NmMwIDEzLjItMTAuOCAyNC0yNCAyNGgtMTJ2LTEyaDEyYzYuNiAwIDEyLTUuNCAxMi0xMnMtNS40LTEyLTEyLTEyaC0xMnYtMTJoMTJjMTMuMiAwIDI0IDEwLjggMjQgMjR6IiBmaWxsPSJ1cmwoI2xvZ29HcmFkaWVudCkiLz48cmVjdCB4PSI3OCIgeT0iOTAiIHdpZHRoPSIzNiIgaGVpZ2h0PSIxMiIgcng9IjYiIGZpbGw9InVybCgjbG9nb0dyYWRpZW50KSIvPjwvc3ZnPg==",
+                            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJpY29uR3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzYjgyZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjVjZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWM0ODk5O3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDgiIGZpbGw9IiMwZjE3MmEiIHN0cm9rZT0idXJsKCNpY29uR3JhZGllbnQpIiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNNjAgOTZjMC0xMy4yIDEwLjgtMjQgMjQtMjRoMTJ2MTJoLTEyYy02LjYgMC0xMiA1LjQtMTIgMTJzNS40IDEyIDEyIDEyaDEydjEyaC0xMmMtMTMuMiAwLTI0LTEwLjgtMjQtMjR6IiBmaWxsPSJ1cmwoI2ljb25HcmFkaWVudCkiLz48cGF0aCBkPSJNMTMyIDk2YzAgMTMuMi0xMC44IDI0LTI0IDI0aC0xMnYtMTJoMTJjNi42IDAgMTItNS40IDEyLTEycy01LjQtMTItMTItMTJoLTEydi0xMmgxMmMxMy4yIDAgMjQgMTAuOCAyNCAyNHoiIGZpbGw9InVybCgjaWNvbkdyYWRpZW50KSIvPjxyZWN0IHg9Ijc4IiB5PSI5MCIgd2lkdGg9IjM2IiBoZWlnaHQ9IjEyIiByeD0iNiIgZmlsbD0idXJsKCNpY29uR3JhZGllbnQpIi8+PC9zdmc+",
                             "sizes": "192x192",
                             "type": "image/svg+xml"
                         },
                         {
-                            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJsb2dvR3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzYjgyZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjVjZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWM0ODk5O3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTI4IiBmaWxsPSIjMGYxNzJhIi8+PHBhdGggZD0iTTE2MCAyNTZjMC0zNS4yIDI4LjgtNjQgNjQtNjRoMzJ2MzJoLTMyYy0xNy42IDAtMzIgMTQuNC0zMiAzMnMxNC40IDMyIDMyIDMyaDMydjMyaC0zMmMtMzUuMiAwLTY0LTI4LjgtNjQtNjR6IiBmaWxsPSJ1cmwoI2xvZ29HcmFkaWVudCkiLz48cGF0aCBkPSJNMzUyIDI1NmMwIDM1LjItMjguOCA2NC02NCA2NGgtMzJ2LTMyaDMyYzE3LjYgMCAzMi0xNC40IDMyLTMyczEuNC00LTMyLTMyaC0zMnYtMzJoMzJjMzUuMiAwIDY0IDI4LjggNjQgNjR6IiBmaWxsPSJ1cmwoI2xvZ29HcmFkaWVudCkiLz48cmVjdCB4PSIyMDgiIHk9IjI0MCIgd2lkdGg9Ijk2IiBoZWlnaHQ9IjMyIiByeD0iMTYiIGZpbGw9InVybCgjbG9nb0dyYWRpZW50KSIvPjwvc3ZnPg==",
+                            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJpY29uR3JhZGllbnQ1MTIiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzYjgyZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjVjZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWM0ODk5O3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTI4IiBmaWxsPSIjMGYxNzJhIiBzdHJva2U9InVybCgjaWNvbkdyYWRpZW50NTEyKSIgc3Ryb2tlLXdpZHRoPSI4Ii8+PHBhdGggZD0iTTE2MCAyNTZjMC0zNS4yIDI4LjgtNjQgNjQtNjRoMzJ2MzJoLTMyYy0xNy42IDAtMzIgMTQuNC0zMiAzMnMxNC40IDMyIDMyIDMyaDMydjMyaC0zMmMtMzUuMiAwLTY0LTI4LjgtNjQtNjR6IiBmaWxsPSJ1cmwoI2ljb25HcmFkaWVudDUxMikiLz48cGF0aCBkPSJNMzUyIDI1NmMwIDM1LjItMjguOCA2NC02NCA2NGgtMzJ2LTMyaDMyYzE3LjYgMCAzMi0xNC40IDMyLTMyczLxNC40LTMyLTMyLTMyaC0zMnYtMzJoMzJjMzUuMiAwIDY0IDI4LjggNjQgNjR6IiBmaWxsPSJ1cmwoI2ljb25HcmFkaWVudDUxMikiLz48cmVjdCB4PSIyMDgiIHk9IjI0MCIgd2lkdGg9Ijk2IiBoZWlnaHQ9IjMyIiByeD0iMTYiIGZpbGw9InVybCgjaWNvbkdyYWRpZW50NTEyKSIvPjwvc3ZnPg==",
                             "sizes": "512x512",
                             "type": "image/svg+xml"
                         }
