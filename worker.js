@@ -5,6 +5,10 @@ const HTML = `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>📎青云量子短链</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojM2I4MmY2O3N0b3Atb3BhY2l0eToxIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3R5bGU9InN0b3AtY29sb3I6IzhiNWNmNjtzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWM0ODk5O3N0b3Atb3BhY2l0eToxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzBmMTcyYSIvPgogIDxyZWN0IHg9IjIiIHk9IjIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgcng9IjYiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+CiAgPHBhdGggZD0iTTggMTJoMTZ2MkgxNnY2SDh2LThaIiBmaWxsPSJ3aGl0ZSIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMTAiIHI9IjIiIGZpbGw9IndoaXRlIi8+CiAgPGNpcmNsZSBjeD0iMjIiIGN5PSIyMiIgcj0iMiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -131,6 +135,24 @@ const HTML = `
         .header {
             text-align: center;
             margin-bottom: 2.5rem;
+        }
+
+        /* Logo样式 */
+        .logo {
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .logo svg {
+            width: 64px;
+            height: 64px;
+            filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover svg {
+            transform: scale(1.1) rotate(5deg);
+            filter: drop-shadow(0 6px 20px rgba(59, 130, 246, 0.4));
         }
 
         .title {
@@ -425,6 +447,11 @@ const HTML = `
                 margin: 0.5rem 0;
             }
 
+            .logo svg {
+                width: 48px;
+                height: 48px;
+            }
+
             .title {
                 font-size: 1.5rem;
                 gap: 0.3rem;
@@ -543,6 +570,53 @@ const HTML = `
     <div class="container">
         <div class="main-card">
             <div class="header">
+                <!-- Logo -->
+                <div class="logo">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge> 
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        
+                        <!-- 背景圆角矩形 -->
+                        <rect width="64" height="64" rx="16" fill="#0f172a" stroke="url(#logoGradient)" stroke-width="2"/>
+                        
+                        <!-- 链接图标 -->
+                        <g filter="url(#glow)">
+                            <!-- 左边链环 -->
+                            <path d="M20 32c0-4.4 3.6-8 8-8h4v4h-4c-2.2 0-4 1.8-4 4s1.8 4 4 4h4v4h-4c-4.4 0-8-3.6-8-8z" fill="url(#logoGradient)"/>
+                            <!-- 右边链环 -->
+                            <path d="M44 32c0 4.4-3.6 8-8 8h-4v-4h4c2.2 0 4-1.8 4-4s-1.8-4-4-4h-4v-4h4c4.4 0 8 3.6 8 8z" fill="url(#logoGradient)"/>
+                            <!-- 中间连接线 -->
+                            <rect x="26" y="30" width="12" height="4" rx="2" fill="url(#logoGradient)"/>
+                        </g>
+                        
+                        <!-- 量子粒子效果 -->
+                        <circle cx="18" cy="18" r="2" fill="#f59e0b" opacity="0.8">
+                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="46" cy="18" r="1.5" fill="#10b981" opacity="0.6">
+                            <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="18" cy="46" r="1.5" fill="#ec4899" opacity="0.7">
+                            <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="46" cy="46" r="2" fill="#3b82f6" opacity="0.5">
+                            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="1.8s" repeatCount="indefinite"/>
+                        </circle>
+                    </svg>
+                </div>
+                
                 <div class="feature-badge">
                     ⚡ 极速生成 · 🔒 安全可靠
                 </div>
@@ -1168,8 +1242,13 @@ export default {
                     "theme_color": "#3b82f6",
                     "icons": [
                         {
-                            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='192' height='192'%3E%3Cpath fill='%233b82f6' d='M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7h-4c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z'/%3E%3C/svg%3E",
+                            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJsb2dvR3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzYjgyZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjVjZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWM0ODk5O3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDgiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNjAgOTZjMC0xMy4yIDEwLjgtMjQgMjQtMjRoMTJ2MTJIODRjLTYuNiAwLTEyIDUuNC0xMiAxMnM1LjQgMTIgMTIgMTJoMTJ2MTJIODRjLTEzLjIgMC0yNC0xMC44LTI0LTI0eiIgZmlsbD0idXJsKCNsb2dvR3JhZGllbnQpIi8+PHBhdGggZD0iTTEzMiA5NmMwIDEzLjItMTAuOCAyNC0yNCAyNGgtMTJ2LTEyaDEyYzYuNiAwIDEyLTUuNCAxMi0xMnMtNS40LTEyLTEyLTEyaC0xMnYtMTJoMTJjMTMuMiAwIDI0IDEwLjggMjQgMjR6IiBmaWxsPSJ1cmwoI2xvZ29HcmFkaWVudCkiLz48cmVjdCB4PSI3OCIgeT0iOTAiIHdpZHRoPSIzNiIgaGVpZ2h0PSIxMiIgcng9IjYiIGZpbGw9InVybCgjbG9nb0dyYWRpZW50KSIvPjwvc3ZnPg==",
                             "sizes": "192x192",
+                            "type": "image/svg+xml"
+                        },
+                        {
+                            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJsb2dvR3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzYjgyZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSI1MCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4YjVjZjY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZWM0ODk5O3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTI4IiBmaWxsPSIjMGYxNzJhIi8+PHBhdGggZD0iTTE2MCAyNTZjMC0zNS4yIDI4LjgtNjQgNjQtNjRoMzJ2MzJoLTMyYy0xNy42IDAtMzIgMTQuNC0zMiAzMnMxNC40IDMyIDMyIDMyaDMydjMyaC0zMmMtMzUuMiAwLTY0LTI4LjgtNjQtNjR6IiBmaWxsPSJ1cmwoI2xvZ29HcmFkaWVudCkiLz48cGF0aCBkPSJNMzUyIDI1NmMwIDM1LjItMjguOCA2NC02NCA2NGgtMzJ2LTMyaDMyYzE3LjYgMCAzMi0xNC40IDMyLTMyczEuNC00LTMyLTMyaC0zMnYtMzJoMzJjMzUuMiAwIDY0IDI4LjggNjQgNjR6IiBmaWxsPSJ1cmwoI2xvZ29HcmFkaWVudCkiLz48cmVjdCB4PSIyMDgiIHk9IjI0MCIgd2lkdGg9Ijk2IiBoZWlnaHQ9IjMyIiByeD0iMTYiIGZpbGw9InVybCgjbG9nb0dyYWRpZW50KSIvPjwvc3ZnPg==",
+                            "sizes": "512x512",
                             "type": "image/svg+xml"
                         }
                     ]
