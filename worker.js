@@ -134,7 +134,7 @@ const HTML = `
         }
 
         .title {
-            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-size: clamp(1.5rem, 3.5vw, 2.5rem);
             font-weight: 700;
             background: var(--gradient-primary);
             -webkit-background-clip: text;
@@ -144,7 +144,9 @@ const HTML = `
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            text-align: center;
+            width: 100%;
         }
 
         .emoji {
@@ -189,6 +191,7 @@ const HTML = `
             font-size: 1rem;
             transition: all 0.3s ease;
             position: relative;
+            min-height: 44px;
         }
 
         .form-input:focus, .form-select:focus {
@@ -221,6 +224,7 @@ const HTML = `
             overflow: hidden;
             margin-bottom: 1.5rem;
             box-shadow: var(--shadow-md);
+            min-height: 44px;
         }
 
         .generate-btn:hover:not(:disabled) {
@@ -314,6 +318,7 @@ const HTML = `
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 0.9rem;
+            min-height: 44px;
         }
 
         .copy-btn:hover {
@@ -406,32 +411,38 @@ const HTML = `
             font-size: 0.8rem;
         }
 
-        /* 移动端优化 */
+        /* 移动端优化 - 修复版本 */
         @media (max-width: 640px) {
             .container {
-                padding: 0.75rem;
-                justify-content: flex-start;
-                padding-top: 2rem;
+                padding: 1rem;
+                justify-content: center;
+                min-height: 100vh;
             }
 
             .main-card {
                 padding: 1.5rem;
                 border-radius: 20px;
-                margin-bottom: 1rem;
+                margin: 0.5rem 0;
             }
 
             .title {
-                font-size: 1.75rem;
+                font-size: 1.5rem;
+                gap: 0.3rem;
+                text-align: center;
+                width: 100%;
+                flex-wrap: wrap;
             }
 
             .form-input, .form-select {
                 padding: 0.875rem 1rem;
-                font-size: 16px; /* 防止iOS缩放 */
+                font-size: 16px;
+                min-height: 44px;
             }
 
             .generate-btn {
                 padding: 1rem 1.5rem;
                 font-size: 1rem;
+                min-height: 44px;
             }
 
             .result-card {
@@ -442,6 +453,10 @@ const HTML = `
                 padding: 0.625rem;
                 font-size: 0.9rem;
             }
+
+            .copy-btn {
+                min-height: 44px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -451,11 +466,31 @@ const HTML = `
             }
 
             .header {
-                margin-bottom: 2rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .title {
+                font-size: 1.375rem;
             }
 
             .form-group {
-                margin-bottom: 1.25rem;
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* 添加超小屏幕支持 */
+        @media (max-width: 375px) {
+            .main-card {
+                padding: 1rem;
+                margin: 0.25rem;
+            }
+            
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .title {
+                font-size: 1.25rem;
             }
         }
 
