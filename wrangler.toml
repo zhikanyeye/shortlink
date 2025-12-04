@@ -14,10 +14,6 @@ preview_id = ""  # 将通过 --var 标志或 .dev.vars 提供
 [vars]
 ENVIRONMENT = "production"
 
-# 触发器配置
-[triggers]
-crons = ["0 2 * * *"]  # 每天凌晨2点执行清理任务
-
 # 开发配置
 [dev]
 ip = "127.0.0.1"
