@@ -569,9 +569,8 @@ const HTML = `
                         type="text" 
                         id="customPath"
                         class="form-input"
-                        placeholder="自定义链接后缀（3-20个字符）"
+                        placeholder="可选：留空自动生成随机后缀"
                         pattern="[A-Za-z0-9_-]{3,20}"
-                        required
                         autocomplete="off"
                     >
                     <div class="error-message" id="pathError"></div>
@@ -710,10 +709,7 @@ const HTML = `
                 isValid = false;
             }
 
-            if (!customPath) {
-                showError(pathError, '请输入自定义后缀');
-                isValid = false;
-            } else if (!isValidPath(customPath)) {
+            if (customPath && !isValidPath(customPath)) {
                 showError(pathError, '后缀只能包含3-20位字母、数字、下划线或连字符');
                 isValid = false;
             }
@@ -858,7 +854,7 @@ function addResponseHeaders(headers = {}, type = 'api') {
 async function isValidTargetUrl(url) {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
         
         const response = await fetch(url, {
             method: 'HEAD',
@@ -870,8 +866,8 @@ async function isValidTargetUrl(url) {
         clearTimeout(timeoutId);
         return response.ok;
     } catch (error) {
-        console.error('URL validation error:', error.name);
-        return false;
+        console.log('URL validation warning:', error.name, '- allowing URL creation');
+        return true;
     }
 }
 
@@ -892,42 +888,7 @@ async function checkRateLimit(ip, env) {
     return true;
 }
 
-// 清理过期URL的函数
-async function cleanupExpiredUrls(env) {
-    const now = Date.now();
-    const batchSize = 100;
-    let cursor;
-    let deletionPromises = [];
-    
-    try {
-        do {
-            const list = await env.URL_DB.list({ cursor, limit: batchSize });
-            cursor = list.cursor;
-            
-            for (const key of list.keys) {
-                try {
-                    const value = await env.URL_DB.get(key.name);
-                    if (!value) continue;
-                    
-                    const data = JSON.parse(value);
-                    
-                    if (data.expires && data.expires < now) {
-                        deletionPromises.push(env.URL_DB.delete(key.name));
-                    }
-                } catch (error) {
-                    console.error(`清理数据解析失败: ${key.name}`, error);
-                }
-            }
-            
-            if (deletionPromises.length > 0) {
-                await Promise.allSettled(deletionPromises);
-                deletionPromises = [];
-            }
-        } while (cursor);
-    } catch (error) {
-        console.error('清理过期URL时发生错误:', error);
-    }
-}
+
 
 export default {
     async fetch(request, env) {
@@ -1012,7 +973,7 @@ export default {
                 }
                 
                 // 验证必要参数
-                if (!data.originalUrl || !data.customPath) {
+                if (!data.originalUrl) {
                     return new Response(JSON.stringify({ error: '缺少必要参数' }), {
                         status: 400,
                         headers: addResponseHeaders({ 
@@ -1035,38 +996,60 @@ export default {
                     });
                 }
 
-                // 验证自定义后缀格式
-                if (!/^[A-Za-z0-9_-]{3,20}$/.test(data.customPath)) {
-                    return new Response(JSON.stringify({ error: '无效的自定义后缀格式' }), {
-                        status: 400,
-                        headers: addResponseHeaders({ 
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*' 
-                        })
-                    });
+                // 自动生成或验证自定义后缀
+                let customPath = data.customPath ? data.customPath.trim() : '';
+                
+                if (!customPath) {
+                    // 自动生成6位随机字符串
+                    let attempts = 0;
+                    const maxAttempts = 5;
+                    
+                    while (attempts < maxAttempts) {
+                        customPath = Math.random().toString(36).substring(2, 8);
+                        const existing = await env.URL_DB.get(customPath);
+                        if (!existing) {
+                            break;
+                        }
+                        attempts++;
+                    }
+                    
+                    if (attempts === maxAttempts) {
+                        return new Response(JSON.stringify({ error: '生成短链接失败，请重试' }), {
+                            status: 500,
+                            headers: addResponseHeaders({ 
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*' 
+                            })
+                        });
+                    }
+                } else {
+                    // 验证自定义后缀格式
+                    if (!/^[A-Za-z0-9_-]{3,20}$/.test(customPath)) {
+                        return new Response(JSON.stringify({ error: '无效的自定义后缀格式' }), {
+                            status: 400,
+                            headers: addResponseHeaders({ 
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*' 
+                            })
+                        });
+                    }
+                    
+                    // 检查后缀是否已被占用
+                    const existing = await env.URL_DB.get(customPath);
+                    if (existing) {
+                        return new Response(JSON.stringify({ error: '后缀已被占用' }), {
+                            status: 409,
+                            headers: addResponseHeaders({ 
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*' 
+                            })
+                        });
+                    }
                 }
 
                 // 检查URL可访问性
                 if (!await isValidTargetUrl(data.originalUrl)) {
-                    return new Response(JSON.stringify({ error: '目标URL不可访问或响应超时' }), {
-                        status: 400,
-                        headers: addResponseHeaders({ 
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*' 
-                        })
-                    });
-                }
-
-                // 检查后缀是否已被占用
-                const existing = await env.URL_DB.get(data.customPath);
-                if (existing) {
-                    return new Response(JSON.stringify({ error: '后缀已被占用' }), {
-                        status: 409,
-                        headers: addResponseHeaders({ 
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*' 
-                        })
-                    });
+                    console.log('URL validation returned false but continuing anyway');
                 }
 
                 // 计算过期时间
@@ -1084,12 +1067,12 @@ export default {
                 };
 
                 // 存储URL数据
-                await env.URL_DB.put(data.customPath, JSON.stringify(urlData), 
+                await env.URL_DB.put(customPath, JSON.stringify(urlData), 
                     expiration ? { expirationTtl: expiration } : undefined);
 
                 // 返回成功响应
                 return new Response(JSON.stringify({
-                    shortUrl: `${requestUrl.origin}/${data.customPath}`
+                    shortUrl: `${requestUrl.origin}/${customPath}`
                 }), {
                     headers: addResponseHeaders({ 
                         'Content-Type': 'application/json',
@@ -1133,17 +1116,6 @@ export default {
                         })
                     });
                 }
-
-                // 更新访问统计
-                const updatedData = {
-                    ...urlData,
-                    lastAccessed: Date.now(),
-                    accessCount: (urlData.accessCount || 0) + 1
-                };
-                
-                env.URL_DB.put(path, JSON.stringify(updatedData), 
-                    urlData.expires ? { expirationTtl: Math.floor((urlData.expires - Date.now()) / 1000) } : undefined)
-                    .catch(console.error);
 
                 // 执行重定向
                 return Response.redirect(urlData.url, 302);
@@ -1196,10 +1168,5 @@ export default {
                 })
             });
         }
-    },
-
-    // 添加定时任务处理过期数据清理
-    async scheduled(event, env, ctx) {
-        ctx.waitUntil(cleanupExpiredUrls(env));
     }
 };
