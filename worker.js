@@ -1021,10 +1021,11 @@ export default {
                     
                     if (attempts === maxAttempts) {
                         return new Response(JSON.stringify({ error: '生成短链接失败，请重试' }), {
-                            status: 500,
+                            status: 503,
                             headers: addResponseHeaders({ 
                                 'Content-Type': 'application/json',
-                                'Access-Control-Allow-Origin': '*' 
+                                'Access-Control-Allow-Origin': '*',
+                                'Retry-After': '60'
                             })
                         });
                     }
