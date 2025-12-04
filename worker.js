@@ -1005,7 +1005,12 @@ export default {
                     const maxAttempts = 5;
                     
                     while (attempts < maxAttempts) {
-                        customPath = Math.random().toString(36).substring(2, 8);
+                        // Generate a reliable 6-character alphanumeric string
+                        customPath = '';
+                        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+                        for (let i = 0; i < 6; i++) {
+                            customPath += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
                         const existing = await env.URL_DB.get(customPath);
                         if (!existing) {
                             break;
