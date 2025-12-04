@@ -1003,13 +1003,14 @@ export default {
                     // 自动生成6位随机字符串
                     let attempts = 0;
                     const maxAttempts = 5;
+                    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+                    const charsLength = chars.length;
                     
                     while (attempts < maxAttempts) {
                         // Generate a reliable 6-character alphanumeric string
                         customPath = '';
-                        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
                         for (let i = 0; i < 6; i++) {
-                            customPath += chars.charAt(Math.floor(Math.random() * chars.length));
+                            customPath += chars.charAt(Math.floor(Math.random() * charsLength));
                         }
                         const existing = await env.URL_DB.get(customPath);
                         if (!existing) {
