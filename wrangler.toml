@@ -3,12 +3,11 @@ main = "worker.js"
 compatibility_date = "2025-05-01"
 compatibility_flags = ["nodejs_compat"]
 
-# KV 命名空间绑定 - 使用变量引用
+# KV 命名空间绑定
 [[kv_namespaces]]
 binding = "URL_DB"
-# 允许用户自己创建并配置 KV 命名空间
-id = ""  # 将通过 --var 标志或 .dev.vars 提供
-preview_id = ""  # 将通过 --var 标志或 .dev.vars 提供
+id = "3a2991ef971d48029ccc2f165d1a870e"
+preview_id = ""
 
 # 环境变量配置
 [vars]
