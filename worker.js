@@ -604,7 +604,7 @@ const HTML = `
         </div>
 
         <div class="footer">
-            <p>© 2024 青云量子短链 · 让分享更简单</p>
+            <p>© <span id="currentYear"></span> 青云量子短链 · 让分享更简单</p>
         </div>
     </div>
 
@@ -811,6 +811,9 @@ const HTML = `
                 // 可以在这里注册 Service Worker
             });
         }
+
+        // 自动更新年份
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
     </script>
 </body>
 </html>
@@ -848,6 +851,37 @@ function addResponseHeaders(headers = {}, type = 'api') {
         ...securityHeaders,
         'Cache-Control': cacheControl[type]
     };
+}
+
+// 使用加密安全的随机字符串生成
+function generateSecureRandomPath(length = 6) {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const charsLength = chars.length;
+    const randomValues = new Uint8Array(length);
+    crypto.getRandomValues(randomValues);
+    
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars[randomValues[i] % charsLength];
+    }
+    return result;
+}
+
+// 恶意URL检测
+function isSuspiciousUrl(url) {
+    const suspiciousPatterns = [
+        /javascript:/i,
+        /data:/i,
+        /vbscript:/i,
+        /file:/i,
+        /<script/i,
+        /%3Cscript/i,
+        /onclick/i,
+        /onerror/i,
+        /onload/i
+    ];
+    
+    return suspiciousPatterns.some(pattern => pattern.test(url));
 }
 
 // URL有效性检查函数
@@ -934,6 +968,132 @@ export default {
                 });
             }
 
+            // 健康检查端点
+            if (path === 'health' || path === 'api/health') {
+                return new Response(JSON.stringify({
+                    status: 'healthy',
+                    timestamp: new Date().toISOString(),
+                    version: '2.1.0'
+                }), {
+                    headers: addResponseHeaders({
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    })
+                });
+            }
+
+            // API文档端点
+            if (path === 'api' || path === 'api/docs') {
+                const apiDocs = {
+                    name: '青云量子短链 API',
+                    version: '2.1.0',
+                    description: '基于 Cloudflare Workers 的短链接生成服务',
+                    endpoints: {
+                        'POST /create': {
+                            description: '创建短链接',
+                            requestBody: {
+                                originalUrl: '(必填) 要缩短的原始URL',
+                                customPath: '(可选) 自定义后缀，3-20位字母数字',
+                                expiration: '(可选) 有效期：604800(7天)、2592000(30天)、7776000(90天)、15552000(180天)、0(永久)'
+                            },
+                            response: {
+                                shortUrl: '生成的短链接'
+                            }
+                        },
+                        'GET /{path}': {
+                            description: '访问短链接，自动重定向到原始URL'
+                        },
+                        'GET /health': {
+                            description: '健康检查端点'
+                        },
+                        'GET /stats/{path}': {
+                            description: '获取短链接统计信息（访问次数、创建时间等）'
+                        }
+                    },
+                    rateLimit: '每IP每小时100次请求'
+                };
+                
+                return new Response(JSON.stringify(apiDocs, null, 2), {
+                    headers: addResponseHeaders({
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }, 'static')
+                });
+            }
+
+            // robots.txt 端点
+            if (path === 'robots.txt') {
+                const robotsTxt = `User-agent: *
+Allow: /
+Disallow: /create
+Disallow: /api/
+Disallow: /stats/
+
+Sitemap: ${requestUrl.origin}/sitemap.xml`;
+                
+                return new Response(robotsTxt, {
+                    headers: addResponseHeaders({
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    }, 'static')
+                });
+            }
+
+            // 短链接统计查询端点
+            if (path.startsWith('stats/')) {
+                const shortPath = path.slice(6); // 移除 'stats/' 前缀
+                
+                if (!shortPath) {
+                    return new Response(JSON.stringify({ error: '请提供短链接路径' }), {
+                        status: 400,
+                        headers: addResponseHeaders({
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        })
+                    });
+                }
+
+                const record = await env.URL_DB.get(shortPath);
+                if (!record) {
+                    return new Response(JSON.stringify({ error: '短链接不存在' }), {
+                        status: 404,
+                        headers: addResponseHeaders({
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        })
+                    });
+                }
+
+                let urlData;
+                try {
+                    urlData = JSON.parse(record);
+                } catch {
+                    return new Response(JSON.stringify({ error: '数据解析失败' }), {
+                        status: 500,
+                        headers: addResponseHeaders({
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        })
+                    });
+                }
+
+                // 返回统计信息（不包含敏感数据如创建者IP）
+                const stats = {
+                    shortUrl: `${requestUrl.origin}/${shortPath}`,
+                    createdAt: urlData.createdAt ? new Date(urlData.createdAt).toISOString() : null,
+                    expiresAt: urlData.expires ? new Date(urlData.expires).toISOString() : null,
+                    isExpired: urlData.expires ? Date.now() > urlData.expires : false,
+                    lastAccessed: urlData.lastAccessed ? new Date(urlData.lastAccessed).toISOString() : null,
+                    accessCount: urlData.accessCount || 0
+                };
+
+                return new Response(JSON.stringify(stats), {
+                    headers: addResponseHeaders({
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    })
+                });
+            }
+
             // 处理创建短链接请求
             if (path === 'create' && request.method === 'POST') {
                 const ip = request.headers.get('cf-connecting-ip') || 
@@ -996,22 +1156,27 @@ export default {
                     });
                 }
 
+                // 检测恶意URL
+                if (isSuspiciousUrl(data.originalUrl)) {
+                    return new Response(JSON.stringify({ error: '检测到不安全的URL，请检查链接' }), {
+                        status: 400,
+                        headers: addResponseHeaders({ 
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*' 
+                        })
+                    });
+                }
+
                 // 自动生成或验证自定义后缀
                 let customPath = data.customPath ? data.customPath.trim() : '';
                 
                 if (!customPath) {
-                    // 自动生成6位随机字符串
+                    // 使用加密安全的随机字符串生成
                     let attempts = 0;
                     const maxAttempts = 5;
-                    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-                    const charsLength = chars.length;
                     
                     while (attempts < maxAttempts) {
-                        // Generate a reliable 6-character alphanumeric string
-                        customPath = '';
-                        for (let i = 0; i < 6; i++) {
-                            customPath += chars.charAt(Math.floor(Math.random() * charsLength));
-                        }
+                        customPath = generateSecureRandomPath(6);
                         const existing = await env.URL_DB.get(customPath);
                         if (!existing) {
                             break;
@@ -1123,6 +1288,22 @@ export default {
                         })
                     });
                 }
+
+                // 更新访问统计（异步执行，不阻塞响应）
+                const updatedData = {
+                    ...urlData,
+                    lastAccessed: Date.now(),
+                    accessCount: (urlData.accessCount || 0) + 1
+                };
+                
+                // 计算剩余TTL
+                const remainingTtl = urlData.expires ? 
+                    Math.max(1, Math.floor((urlData.expires - Date.now()) / 1000)) : 
+                    undefined;
+                
+                env.URL_DB.put(path, JSON.stringify(updatedData), 
+                    remainingTtl ? { expirationTtl: remainingTtl } : undefined
+                ).catch(console.error);
 
                 // 执行重定向
                 return Response.redirect(urlData.url, 302);
