@@ -869,6 +869,19 @@ function generateSecureRandomPath(length = 6) {
 
 // 恶意URL检测
 function isSuspiciousUrl(url) {
+    // 先对URL进行解码以检测编码绕过
+    let decodedUrl = url;
+    try {
+        // 尝试多次解码以检测双重编码
+        for (let i = 0; i < 3; i++) {
+            const newDecoded = decodeURIComponent(decodedUrl);
+            if (newDecoded === decodedUrl) break;
+            decodedUrl = newDecoded;
+        }
+    } catch {
+        // 解码失败时使用原始URL
+    }
+    
     const suspiciousPatterns = [
         /javascript:/i,
         /data:/i,
@@ -876,12 +889,16 @@ function isSuspiciousUrl(url) {
         /file:/i,
         /<script/i,
         /%3Cscript/i,
-        /onclick/i,
-        /onerror/i,
-        /onload/i
+        /%253Cscript/i,  // 双重编码
+        /on\w+\s*=/i,    // 通用事件处理器 (onclick=, onerror=, onload= 等)
+        /expression\s*\(/i,  // CSS expression
+        /url\s*\(\s*['"]*\s*javascript/i  // CSS url() with javascript
     ];
     
-    return suspiciousPatterns.some(pattern => pattern.test(url));
+    // 同时检查原始URL和解码后的URL
+    return suspiciousPatterns.some(pattern => 
+        pattern.test(url) || pattern.test(decodedUrl)
+    );
 }
 
 // URL有效性检查函数
